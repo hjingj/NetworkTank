@@ -11,8 +11,9 @@ namespace Span
     public class GameManager : MonoBehaviourPunCallbacks
     {
         public static GameManager instance;
-        public static GameObject localPlayer;
         string gameVersion = "1";
+
+        public static GameObject localPlayer;
 
         void Awake()
         {
