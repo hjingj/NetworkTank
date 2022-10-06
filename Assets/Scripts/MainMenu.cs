@@ -15,7 +15,6 @@ namespace Span
 
         void Awake()
         {
-
             if (instance != null)
             {
                 DestroyImmediate(gameObject);
@@ -26,7 +25,7 @@ namespace Span
 
             m_ui = transform.FindAnyChild<Transform>("UI").gameObject;
             m_joinGameButton = transform.FindAnyChild<Button>("JoinGameButton");
-
+            
             m_ui.SetActive(true);
             m_joinGameButton.interactable = false;
         }
