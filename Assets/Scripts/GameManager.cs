@@ -40,7 +40,12 @@ namespace Span
             SceneManager.sceneLoaded += OnSceneLoaded;
 
             PhotonNetwork.GameVersion = gameVersion;
-            PhotonNetwork.ConnectUsingSettings();
+        }
+
+        public bool ConnectToServer (string account)
+        {
+            PhotonNetwork.NickName = account;
+            return PhotonNetwork.ConnectUsingSettings();
         }
 
         public override void OnConnected()
@@ -50,7 +55,7 @@ namespace Span
 
         public override void OnConnectedToMaster()
         {
-            Debug.Log("PUN Connected to Master");
+            Debug.Log("PUN Connected to Master: " + PhotonNetwork.NickName);
         }
 
         public override void OnDisconnected(DisconnectCause cause)

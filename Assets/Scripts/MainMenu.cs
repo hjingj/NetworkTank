@@ -4,13 +4,16 @@ using UnityEngine;
 using Photon.Pun;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 namespace Span
 {
     public class MainMenu : MonoBehaviourPunCallbacks
     {
-        static MainMenu instance;
+        public static MainMenu instance;
         private GameObject m_ui;
+        private TMP_InputField m_accountInput; // 新增輸入框
+        private Button m_loginButton; // 新增登入按鈕
         private Button m_joinGameButton;
 
         void Awake()
@@ -24,10 +27,11 @@ namespace Span
             DontDestroyOnLoad(gameObject);
 
             m_ui = transform.FindAnyChild<Transform>("UI").gameObject;
+            m_accountInput = transform.FindAnyChild<TMP_InputField>("AccountInput"); // 抓取輸入框元件
+            m_loginButton = transform.FindAnyChild<Button>("LoginButton"); // 抓取登入按鈕元件
             m_joinGameButton = transform.FindAnyChild<Button>("JoinGameButton");
-            
-            m_ui.SetActive(true);
-            m_joinGameButton.interactable = false;
+
+            ResetUI(); // 抽出UI初始化
         }
 
         public override void OnEnable()
@@ -50,9 +54,40 @@ namespace Span
             m_ui.SetActive(!PhotonNetwork.InRoom);
         }
 
-        public override void OnConnectedToMaster()
+        public override void OnConnectedToMaster() // 處理連線後UI變化
         {
+            m_accountInput.gameObject.SetActive(false);
+            m_loginButton.gameObject.SetActive(false);
+            m_joinGameButton.gameObject.SetActive(true);
+        }
+        private void ResetUI() // 重置UI
+        {
+            m_ui.SetActive(true);
+            m_accountInput.gameObject.SetActive(true);
+            m_loginButton.gameObject.SetActive(true);
+            m_joinGameButton.gameObject.SetActive(false);
+            m_accountInput.interactable = true;
+            m_loginButton.interactable = true;
             m_joinGameButton.interactable = true;
+        }
+
+        public void Login() // 處理登入伺服器流程
+        {
+            if (string.IsNullOrEmpty(m_accountInput.text))
+            {
+                Debug.Log("Please input your account!!");
+                return;
+            }
+
+            m_accountInput.interactable = false;
+            m_loginButton.interactable = false;
+
+            if (!GameManager.instance.ConnectToServer(m_accountInput.text))
+            {
+                m_accountInput.interactable = true;
+                m_loginButton.interactable = true;
+                Debug.Log("Connect to PUN Failed!!");
+            }
         }
     }
 }
