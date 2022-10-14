@@ -10,15 +10,20 @@ namespace Span
 {
     public class MainMenu : MonoBehaviourPunCallbacks
     {
-        public static MainMenu instance;
+        static MainMenu instance;
         private GameObject m_ui;
+
+        private GameObject m_loginUI;
         private TMP_InputField m_accountInput; // 新增輸入框
         private Button m_loginButton; // 新增登入按鈕
 
+        private GameObject m_lobbyUI;
         private TMP_Dropdown m_mapSelector;
         private TMP_Dropdown m_gameModeSelector;
         private Button m_createGameButton;
         private Button m_joinGameButton;
+
+        private GameObject m_roomUI;
 
         void Awake()
         {
@@ -31,13 +36,18 @@ namespace Span
             DontDestroyOnLoad(gameObject);
 
             m_ui = transform.FindAnyChild<Transform>("UI").gameObject;
+
+            m_loginUI = transform.FindAnyChild<Transform>("LoginUI").gameObject;
             m_accountInput = transform.FindAnyChild<TMP_InputField>("AccountInput"); // 抓取輸入框元件
             m_loginButton = transform.FindAnyChild<Button>("LoginButton"); // 抓取登入按鈕元件
 
+            m_lobbyUI = transform.FindAnyChild<Transform>("LobbyUI").gameObject;
             m_mapSelector = transform.FindAnyChild<TMP_Dropdown>("MapSelector");
             m_gameModeSelector = transform.FindAnyChild<TMP_Dropdown>("GameModeSelector");
             m_createGameButton = transform.FindAnyChild<Button>("CreateGameButton");
             m_joinGameButton = transform.FindAnyChild<Button>("JoinGameButton");
+
+            m_roomUI = transform.FindAnyChild<Transform>("RoomUI").gameObject;
 
             ResetUI(); // 抽出UI初始化
         }
@@ -59,37 +69,37 @@ namespace Span
         }
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            m_ui.SetActive(!PhotonNetwork.InRoom);
+            if (!PhotonNetwork.InRoom)
+            {
+                ResetUI();
+            }
+            else 
+            {
+                m_lobbyUI.SetActive(false);
+                m_roomUI.SetActive(true);
+            }
         }
 
         public override void OnConnectedToMaster() // 處理連線後UI變化
         {
-            m_accountInput.gameObject.SetActive(false);
-            m_loginButton.gameObject.SetActive(false);
-
-            m_mapSelector.gameObject.SetActive(true);
-            m_gameModeSelector.gameObject.SetActive(true);
-            m_createGameButton.gameObject.SetActive(true);
-            m_joinGameButton.gameObject.SetActive(true);
+            m_loginUI.SetActive(false);
+            m_lobbyUI.SetActive(true);
         }
         private void ResetUI() // 重置UI
         {
             m_ui.SetActive(true);
-            m_accountInput.gameObject.SetActive(true);
-            m_loginButton.gameObject.SetActive(true);
 
-            m_mapSelector.gameObject.SetActive(false);
-            m_gameModeSelector.gameObject.SetActive(false);
-            m_createGameButton.gameObject.SetActive(false);
-            m_joinGameButton.gameObject.SetActive(false);
-
+            m_loginUI.SetActive(true);
             m_accountInput.interactable = true;
             m_loginButton.interactable = true;
 
+            m_lobbyUI.SetActive(false);
             m_mapSelector.interactable = true;
             m_gameModeSelector.interactable = true;
             m_createGameButton.interactable = true;
             m_joinGameButton.interactable = true;
+
+            m_roomUI.SetActive(false);
         }
 
         public void Login() // 處理登入伺服器流程
