@@ -155,5 +155,16 @@ namespace Span
                 ? defaultSpawnPoint.transform 
                 : spawnPoints[Random.Range(0, spawnPoints.Count)].transform;
         }
+
+        public override void OnLobbyStatisticsUpdate(List<TypedLobbyInfo> lobbyStatistics)
+        {
+            var message = $"Lobby List: {lobbyStatistics.Count} lobbies\n";
+            foreach (var lobbyInfo in lobbyStatistics)
+            {
+                message += $"{lobbyInfo.Name}, {lobbyInfo.Type}, {lobbyInfo.RoomCount} room, " +
+                    $"{lobbyInfo.PlayerCount} players\n";
+            }
+            Debug.Log(message);
+        }
     }
 }
