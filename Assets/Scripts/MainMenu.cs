@@ -5,6 +5,7 @@ using Photon.Pun;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
+using Photon.Realtime;
 
 namespace Span
 {
@@ -18,6 +19,8 @@ namespace Span
         private Button m_loginButton; // 新增登入按鈕
 
         private GameObject m_lobbyUI;
+        private Button m_joinLobbyButton;
+        private Button m_leaveLobbyButton;
         private TMP_Dropdown m_mapSelector;
         private TMP_Dropdown m_gameModeSelector;
         private Button m_createGameButton;
@@ -42,6 +45,8 @@ namespace Span
             m_loginButton = transform.FindAnyChild<Button>("LoginButton"); // 抓取登入按鈕元件
 
             m_lobbyUI = transform.FindAnyChild<Transform>("LobbyUI").gameObject;
+            m_joinLobbyButton = transform.FindAnyChild<Button>("JoinLobbyButton");
+            m_leaveLobbyButton = transform.FindAnyChild<Button>("LeaveLobbyButton");
             m_mapSelector = transform.FindAnyChild<TMP_Dropdown>("MapSelector");
             m_gameModeSelector = transform.FindAnyChild<TMP_Dropdown>("GameModeSelector");
             m_createGameButton = transform.FindAnyChild<Button>("CreateGameButton");
@@ -94,6 +99,8 @@ namespace Span
             m_loginButton.interactable = true;
 
             m_lobbyUI.SetActive(false);
+            m_joinLobbyButton.interactable = true;
+            m_leaveLobbyButton.interactable = false;
             m_mapSelector.interactable = true;
             m_gameModeSelector.interactable = true;
             m_createGameButton.interactable = true;
@@ -121,6 +128,40 @@ namespace Span
             }
         }
 
+        public void JoinLobby()
+        {
+            PhotonNetwork.JoinLobby();
+        }
+
+        public void LeaveLobby()
+        {
+            PhotonNetwork.LeaveLobby();
+        }
+
+        public override void OnJoinedLobby()
+        {
+            Debug.Log($"Joined Lobby: {PhotonNetwork.CurrentLobby.Name}{PhotonNetwork.CurrentLobby.Type}");
+            m_joinLobbyButton.interactable = false;
+            m_leaveLobbyButton.interactable = true;
+        }
+
+        public override void OnLeftLobby()
+        {
+            // 離開 Lobby 的時候，會加回 Default Lobby
+            Debug.Log($"Left Lobby: {PhotonNetwork.CurrentLobby.Name}{PhotonNetwork.CurrentLobby.Type}");
+            m_joinLobbyButton.interactable = true;
+            m_leaveLobbyButton.interactable = false;
+        }
+
+        public override void OnRoomListUpdate(List<RoomInfo> roomList)
+        {
+            var message = $"Room List: {roomList.Count} room\n";
+            foreach (var roomInfo in roomList)
+            {
+                message += $"{roomInfo.Name},{roomInfo.IsOpen},{roomInfo.PlayerCount}/{roomInfo.MaxPlayers}";
+            }
+            Debug.Log(message);
+        }
         public void CreateGame()
         {
             GameManager.instance.CreateGame(m_mapSelector.value + 1, m_gameModeSelector.value + 1);
