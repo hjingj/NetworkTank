@@ -13,9 +13,9 @@ namespace Span
         public static GameManager instance;
         string gameVersion = "1";
 
-        private const string MAP_PROP_KEY = "map";
-        private const string GAME_MODE_PROP_KEY = "gm";
-        private const string AI_PROP_KEY = "ai";
+        private const string MAP_PROP_KEY = "C0";
+        private const string GAME_MODE_PROP_KEY = "C1";
+        private const string AI_PROP_KEY = "C2";
 
         public static GameObject localPlayer;
 
@@ -94,28 +94,35 @@ namespace Span
         public void JoinRandomGame(int map, int gameMode, TypedLobby type, string sqlFilter)
         {
             byte expectedMaxPlayers = 0;
-            var expectedCustomRoomProperties = new ExitGames.Client.Photon.Hashtable
-            {
-                {MAP_PROP_KEY, map },
-                {GAME_MODE_PROP_KEY, gameMode }
-            };
 
+            ExitGames.Client.Photon.Hashtable expectedCustomRoomProperties = null;
+            if (type.Type == LobbyType.Default)
+            {
+                expectedCustomRoomProperties = new ExitGames.Client.Photon.Hashtable
+                {
+                  {MAP_PROP_KEY, map },
+                  {GAME_MODE_PROP_KEY, gameMode }
+                };
+            }
             PhotonNetwork.JoinRandomRoom(expectedCustomRoomProperties, expectedMaxPlayers, MatchmakingMode.FillRoom, type, sqlFilter);
         }
         public override void OnJoinedRoom()
         {
             Debug.Log($"Joined room: {PhotonNetwork.CurrentRoom.Name}{PhotonNetwork.CurrentRoom.CustomProperties}");
+        }
 
+        public void EnterGame()
+        {
             if (PhotonNetwork.IsMasterClient)
             {
                 PhotonNetwork.LoadLevel("GameScene");
             }
         }
-
         public override void OnJoinRandomFailed(short returnCode, string message)
         {
             Debug.Log($"Join Random Room Failed: ({returnCode}) {message}");
         }
+
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             if (!PhotonNetwork.InRoom)

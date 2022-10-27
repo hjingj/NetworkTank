@@ -30,7 +30,8 @@ namespace Span
         private Button m_joinGameButton;
 
         private GameObject m_roomUI;
-
+        private List<TMP_Text> m_playerNameTexts = new List<TMP_Text>();
+        private Button m_enterGameButton;
 
         void Awake()
         {
@@ -60,6 +61,11 @@ namespace Span
             m_joinGameButton = transform.FindAnyChild<Button>("JoinGameButton");
 
             m_roomUI = transform.FindAnyChild<Transform>("RoomUI").gameObject;
+            m_playerNameTexts.Add(transform.FindAnyChild<TMP_Text>("PlayerName01"));
+            m_playerNameTexts.Add(transform.FindAnyChild<TMP_Text>("PlayerName02"));
+            m_playerNameTexts.Add(transform.FindAnyChild<TMP_Text>("PlayerName03"));
+            m_playerNameTexts.Add(transform.FindAnyChild<TMP_Text>("PlayerName04"));
+            m_enterGameButton = transform.FindAnyChild<Button>("EnterGameButton");
 
             ResetUI(); // 抽出UI初始化
         }
@@ -116,6 +122,11 @@ namespace Span
             m_joinGameButton.interactable = true;
 
             m_roomUI.SetActive(false);
+            foreach (var mPlayerNameText in m_playerNameTexts)
+            {
+                mPlayerNameText.text = "n/a";
+            }
+            m_enterGameButton.interactable = true;
         }
 
         public void Login() // 處理登入伺服器流程
@@ -174,7 +185,7 @@ namespace Span
             var sqlLobby = new TypedLobby(m_lobbyInput.text, LobbyType.SqlLobby);
             var sqlLobbyFilter = m_lobbyFilter.text;
             StatisticsUI.instance.ClearRoomList();
-            // C0 BETWEEN 0 AND 1 AND C1 = 0
+            // C0 BETWEEN 1 AND 2 AND C1 = 1
             PhotonNetwork.GetCustomRoomList(sqlLobby, sqlLobbyFilter);
         }
 
@@ -190,9 +201,50 @@ namespace Span
             GameManager.instance.JoinRandomGame(m_mapSelector.value + 1, m_gameModeSelector.value + 1, sqlLobby, sqlLobbyFilter);
         }
 
+        public override void OnJoinedRoom()
+        {
+            m_lobbyUI.SetActive(false);
+            m_roomUI.SetActive(true);
+
+            // m_enterGameButton.gameObject.SetActive(PhotonNetwork.IsMasterClient);
+            refreshPlayerList();
+        }
+
+
         public override void OnJoinRandomFailed(short returnCode, string message)
         {
             Debug.Log($"Join Random Failed: ({returnCode}) {message}");
+        }
+
+        public override void OnPlayerEnteredRoom(Player newPlayer)
+        {
+            refreshPlayerList();
+        } 
+
+        public override void OnPlayerLeftRoom(Player otherPlayer)
+        {
+            refreshPlayerList();
+        }
+
+        private void refreshPlayerList()
+        {
+            // 可以試試看，把這行搬到 OnJoinedRoom event 裡面，會有什麼現象
+            m_enterGameButton.gameObject.SetActive(PhotonNetwork.IsMasterClient);
+
+            var i = 0;
+            for (i = 0; i < PhotonNetwork.PlayerList.Length; i++) 
+            {
+                m_playerNameTexts[i].text = PhotonNetwork.PlayerList[i].NickName;
+            }
+            for (; i < 4; i++)
+            {
+                m_playerNameTexts[i].text = "n/a";
+            }
+        }
+
+        public void EnterGame()
+        {
+            GameManager.instance.EnterGame();
         }
     }
 }
