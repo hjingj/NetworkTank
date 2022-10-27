@@ -77,7 +77,7 @@ namespace Span
             PhotonNetwork.JoinOrCreateRoom("Kingdom", options, null);
         }
 
-        public void CreateGame(int map, int gameMode)
+        public void CreateGame(int map, int gameMode, TypedLobby type)
         {
             var roomOptions = new RoomOptions();
             roomOptions.CustomRoomPropertiesForLobby = new[] { MAP_PROP_KEY, GAME_MODE_PROP_KEY, AI_PROP_KEY };
@@ -87,10 +87,11 @@ namespace Span
                 {GAME_MODE_PROP_KEY, gameMode }
             };
             roomOptions.MaxPlayers = 4;
-            PhotonNetwork.CreateRoom(null, roomOptions, null);
+
+            PhotonNetwork.CreateRoom(null, roomOptions, type);
         }
 
-        public void JoinRandomGame(int map, int gameMode)
+        public void JoinRandomGame(int map, int gameMode, TypedLobby type, string sqlFilter)
         {
             byte expectedMaxPlayers = 0;
             var expectedCustomRoomProperties = new ExitGames.Client.Photon.Hashtable
@@ -99,7 +100,7 @@ namespace Span
                 {GAME_MODE_PROP_KEY, gameMode }
             };
 
-            PhotonNetwork.JoinRandomRoom(expectedCustomRoomProperties, expectedMaxPlayers);
+            PhotonNetwork.JoinRandomRoom(expectedCustomRoomProperties, expectedMaxPlayers, MatchmakingMode.FillRoom, type, sqlFilter);
         }
         public override void OnJoinedRoom()
         {

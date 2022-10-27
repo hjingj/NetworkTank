@@ -22,12 +22,15 @@ namespace Span
         private TMP_InputField m_lobbyInput;
         private Button m_joinLobbyButton;
         private Button m_leaveLobbyButton;
+
+        private TMP_InputField m_lobbyFilter;
         private TMP_Dropdown m_mapSelector;
         private TMP_Dropdown m_gameModeSelector;
         private Button m_createGameButton;
         private Button m_joinGameButton;
 
         private GameObject m_roomUI;
+
 
         void Awake()
         {
@@ -49,6 +52,8 @@ namespace Span
             m_lobbyInput = transform.FindAnyChild<TMP_InputField>("LobbyInput");
             m_joinLobbyButton = transform.FindAnyChild<Button>("JoinLobbyButton");
             m_leaveLobbyButton = transform.FindAnyChild<Button>("LeaveLobbyButton");
+
+            m_lobbyFilter = transform.FindAnyChild<TMP_InputField>("LobbyFilter");
             m_mapSelector = transform.FindAnyChild<TMP_Dropdown>("MapSelector");
             m_gameModeSelector = transform.FindAnyChild<TMP_Dropdown>("GameModeSelector");
             m_createGameButton = transform.FindAnyChild<Button>("CreateGameButton");
@@ -81,7 +86,7 @@ namespace Span
             {
                 ResetUI();
             }
-            else 
+            else
             {
                 m_lobbyUI.SetActive(false);
                 m_roomUI.SetActive(true);
@@ -164,13 +169,30 @@ namespace Span
             m_leaveLobbyButton.interactable = false;
         }
 
+        public void GetCustomRoomList()
+        {
+            var sqlLobby = new TypedLobby(m_lobbyInput.text, LobbyType.SqlLobby);
+            var sqlLobbyFilter = m_lobbyFilter.text;
+            StatisticsUI.instance.ClearRoomList();
+            // C0 BETWEEN 0 AND 1 AND C1 = 0
+            PhotonNetwork.GetCustomRoomList(sqlLobby, sqlLobbyFilter);
+        }
+
         public void CreateGame()
         {
-            GameManager.instance.CreateGame(m_mapSelector.value + 1, m_gameModeSelector.value + 1);
+            var sqlLobby = new TypedLobby(m_lobbyInput.text, LobbyType.SqlLobby);
+            GameManager.instance.CreateGame(m_mapSelector.value + 1, m_gameModeSelector.value + 1, sqlLobby);
         }
         public void JoinRandomGame()
         {
-            GameManager.instance.JoinRandomGame(m_mapSelector.value + 1, m_gameModeSelector.value + 1);
+            var sqlLobby = new TypedLobby(m_lobbyInput.text, LobbyType.SqlLobby);
+            var sqlLobbyFilter = m_lobbyFilter.text;
+            GameManager.instance.JoinRandomGame(m_mapSelector.value + 1, m_gameModeSelector.value + 1, sqlLobby, sqlLobbyFilter);
+        }
+
+        public override void OnJoinRandomFailed(short returnCode, string message)
+        {
+            Debug.Log($"Join Random Failed: ({returnCode}) {message}");
         }
     }
 }

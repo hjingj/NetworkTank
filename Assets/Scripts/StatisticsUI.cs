@@ -33,6 +33,23 @@ public class StatisticsUI : MonoBehaviourPunCallbacks
 
     private Dictionary<string, RoomInfo> cachedRoomList = new Dictionary<string, RoomInfo>();
 
+    public static StatisticsUI instance;
+
+    private void Awake()
+    {
+        if (instance != null)
+        {
+            DestroyImmediate(gameObject);
+            return;
+        }
+        instance = this;
+    }
+
+    public void ClearRoomList()
+    {
+        cachedRoomList.Clear();
+    }
+
     void Start()
     {
         cachedRoomList.Clear();
