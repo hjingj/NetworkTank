@@ -106,6 +106,7 @@ namespace Span
             }
             PhotonNetwork.JoinRandomRoom(expectedCustomRoomProperties, expectedMaxPlayers, MatchmakingMode.FillRoom, type, sqlFilter);
         }
+
         public override void OnJoinedRoom()
         {
             Debug.Log($"Joined room: {PhotonNetwork.CurrentRoom.Name}{PhotonNetwork.CurrentRoom.CustomProperties}");
@@ -115,9 +116,21 @@ namespace Span
         {
             if (PhotonNetwork.IsMasterClient)
             {
+                PhotonNetwork.CurrentRoom.IsOpen = false;
                 PhotonNetwork.LoadLevel("GameScene");
             }
         }
+
+        public void LeaveGame()
+        {
+            PhotonNetwork.LeaveRoom();
+        }
+
+        public override void OnLeftRoom()
+        {
+            PhotonNetwork.LoadLevel("MainScene");
+        }
+
         public override void OnJoinRandomFailed(short returnCode, string message)
         {
             Debug.Log($"Join Random Room Failed: ({returnCode}) {message}");

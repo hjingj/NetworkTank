@@ -12,6 +12,9 @@ namespace Span
     public class MainMenu : MonoBehaviourPunCallbacks
     {
         static MainMenu instance;
+
+        private bool IsInitialed = false;
+
         private GameObject m_ui;
 
         private GameObject m_loginUI;
@@ -32,6 +35,9 @@ namespace Span
         private GameObject m_roomUI;
         private List<TMP_Text> m_playerNameTexts = new List<TMP_Text>();
         private Button m_enterGameButton;
+
+        private GameObject m_gameUI;
+        private Button m_leaveGameButton;
 
         void Awake()
         {
@@ -67,6 +73,9 @@ namespace Span
             m_playerNameTexts.Add(transform.FindAnyChild<TMP_Text>("PlayerName04"));
             m_enterGameButton = transform.FindAnyChild<Button>("EnterGameButton");
 
+            m_gameUI = transform.FindAnyChild<Transform>("GameUI").gameObject;
+            m_leaveGameButton = transform.FindAnyChild<Button>("LeaveGameButton");
+
             ResetUI(); // 抽出UI初始化
         }
 
@@ -88,14 +97,24 @@ namespace Span
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
+            Debug.Log($"Scene Loaded: {scene.name}");
             if (!PhotonNetwork.InRoom)
             {
-                ResetUI();
+                if (!IsInitialed)
+                {
+                    IsInitialed = true;
+                    ResetUI();
+                }
+                else
+                {
+                    BackLobby();
+                }
             }
             else
             {
                 m_lobbyUI.SetActive(false);
-                m_roomUI.SetActive(true);
+                m_roomUI.SetActive(false);
+                m_gameUI.SetActive(true);
             }
         }
 
@@ -127,6 +146,24 @@ namespace Span
                 mPlayerNameText.text = "n/a";
             }
             m_enterGameButton.interactable = true;
+
+            m_gameUI.SetActive(false);
+            m_leaveGameButton.interactable = true;
+        }
+
+        public void BackLobby()
+        {
+            m_loginUI.SetActive(false);
+            m_lobbyUI.SetActive(false);
+            m_lobbyInput.interactable = true;
+            m_joinLobbyButton.interactable = true;
+            m_leaveLobbyButton.interactable = false;
+            m_mapSelector.interactable = true;
+            m_gameModeSelector.interactable = true;
+            m_createGameButton.interactable = true;
+            m_joinGameButton.interactable = true;
+            m_roomUI.SetActive(false);
+            m_gameUI.SetActive(false);
         }
 
         public void Login() // 處理登入伺服器流程
@@ -245,6 +282,12 @@ namespace Span
         public void EnterGame()
         {
             GameManager.instance.EnterGame();
+        }
+
+        public void LeaveGame()
+        {
+            Debug.Log("LeaveGame");
+            GameManager.instance.LeaveGame();
         }
     }
 }
